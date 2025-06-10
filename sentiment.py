@@ -6,6 +6,7 @@ from pathlib import Path
 
 import grpc.aio
 import numpy as np
+import tqdm
 
 SENTIMENTS = ['积极', '消极', '中性']
 
@@ -27,9 +28,10 @@ async def main():
     import Evaluator_pb2 as _pb
     stub = _rpc.EvaluatorStub(channel)
 
-    source, out = Path('infer_sentiments.csv'), Path('infer_results.csv')
+    source, out = Path('infer_neat.csv'), Path('infer_results.csv')
 
     completed_lines = 0
+    total_lines = 0
     if not out.exists():
         out.touch()
 
@@ -37,7 +39,11 @@ async def main():
         while fd_in.readline():
             completed_lines += 1
 
-    with open(source, 'rt') as fd_in, open(out, 'at') as fd_out:
+    with open(source, 'rt') as fd:
+        while fd.readline():
+            total_lines += 1
+
+    with open(source, 'rt') as fd_in, open(out, 'at') as fd_out, tqdm.tqdm(total=total_lines) as pbar:
         reader = csv.reader(fd_in)
         for _ in range(completed_lines):
             next(reader)
@@ -57,6 +63,7 @@ async def main():
             writer.writerows(r + [get_sentiment(scores[idx])] for idx, r in enumerate(rows))
 
             fd_out.flush()
+            pbar.update(len(rows))
 
 
 if __name__ == '__main__':
