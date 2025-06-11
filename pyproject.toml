@@ -8,5 +8,6 @@ dependencies = [
     "grpcio>=1.73.0",
     "grpcio-tools>=1.73.0",
     "numpy>=2.3.0",
+    "pyspark-client>=4.0.0",
     "tqdm>=4.67.1",
 ]
