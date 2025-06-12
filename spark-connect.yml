@@ -1,0 +1,47 @@
+services:
+  spark-master:
+    image: apache/spark:4.0.0-java21
+    container_name: spark-master
+    hostname: spark-master
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    environment:
+      - SPARK_MASTER_HOST=spark-master
+      - SPARK_MASTER_PORT=7077
+      - SPARK_MASTER_WEBUI_PORT=8080
+    entrypoint: 
+      - "bash"
+      - "-c"
+      - "/opt/spark/sbin/start-master.sh && tail -f /dev/null"
+    volumes:
+      - ./spark_data:/opt/spark/work-dir/spark-warehouse/data:rw
+
+  spark-connect:
+    image: apache/spark:4.0.0-java21
+    container_name: spark-connect
+    hostname: spark-connect
+    ports:
+      - "4040:4040"
+      - "15002:15002"
+    depends_on:
+      - spark-master
+    volumes:
+      - ./spark_data:/opt/spark/work-dir/spark-warehouse/data:rw
+    command: 
+      - "bash"
+      - "-c"
+      - "/opt/spark/sbin/start-connect-server.sh && tail -f /dev/null"
+
+  spark-worker:
+    image: apache/spark:4.0.0-java21
+    container_name: spark-worker
+    hostname: spark-worker
+    depends_on:
+      - spark-master
+    entrypoint:
+      - "bash" 
+      - "-c"
+      - "/opt/spark/sbin/start-worker.sh spark://spark-master:7077 && tail -f /dev/null"
+    volumes:
+      - ./spark_data:/opt/spark/work-dir/spark-warehouse/data:rw
