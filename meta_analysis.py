@@ -9,6 +9,7 @@ from pyspark.sql.types import StructType
 def main():
     parser = ArgumentParser()
     parser.add_argument('--spark-connect-url', '-S', type=str, default='sc://localhost:15002')
+    parser.add_argument('--output-dir', '-o', type=str, default='./output')
     parser.add_argument('input_files', nargs='+')
     args = parser.parse_args()
 
@@ -35,6 +36,9 @@ def main():
                                    (col('count') / col('topic_size')).alias('ratio')) \
         .sort(desc('topic_size'))
     topic_dist.show()
+
+    global_dist.write.csv(f'{args.output_dir}/weebiee_global_dist')
+    topic_dist.write.csv(f'{args.output_dir}/weebiee_topic_dist')
 
 
 if __name__ == '__main__':
