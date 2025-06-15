@@ -26,7 +26,7 @@ def main():
     total_posts = posts.count()
     global_dist = posts.groupby('sentiment').agg(count('*').alias('count')) \
         .withColumn('ratio', col('count') / total_posts)
-    global_dist.show()
+    global_dist.select('sentiment', 'ratio').show()
 
     topic_count = posts.groupby('topic').agg(count('*').alias('count'))
     topic_dist = posts.groupby('topic', 'sentiment').agg(count('post').alias('count'))
